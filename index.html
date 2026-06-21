@@ -15,9 +15,19 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', sans-serif; background: var(--ink); color: var(--paper); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
 
-  header { width: 100%; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  header { width: 100%; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.08); }
   .logo { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; letter-spacing: 2px; color: var(--gold); }
   .gemini-tag { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--gemini-blue); font-weight: 700; }
+
+  .api-key-box { display: flex; align-items: center; gap: 6px; }
+  .api-key-box input { font-family: 'Space Mono', monospace; font-size: 11px; width: 150px; padding: 6px 9px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: var(--paper); }
+  @media (max-width: 480px) { .api-key-box input { width: 110px; } }
+  .api-key-box input::placeholder { color: rgba(255,255,255,0.3); }
+  .api-key-box input:focus { outline: none; border-color: var(--gold); }
+  .api-key-box button { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; background: var(--gold); color: var(--ink); }
+  .api-key-box button:hover { background: #d9a840; }
+  .api-key-status { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'Space Mono', monospace; }
+  .api-key-status.saved { color: #66bb6a; }
 
   main { flex: 1; display: flex; gap: 24px; padding: 20px 16px; max-width: 1080px; width: 100%; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
 
@@ -111,7 +121,11 @@
 <header>
   <div class="logo">五目並べ</div>
   <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35)">HUMAN VS AI</div>
-  <div class="gemini-tag">✦ GEMINI</div>
+  <div class="api-key-box">
+    <input type="password" id="api-key-input" placeholder="Gemini API 키 (AIza...)">
+    <button onclick="saveApiKey()">저장</button>
+    <span class="api-key-status" id="api-key-status">미설정</span>
+  </div>
 </header>
 
 <main>
@@ -161,7 +175,7 @@
     </div>
     <div class="analysis-loading" id="analysis-loading">
       <div class="spinner"></div>
-      <div style="color:rgba(255,255,255,0.5);font-size:14px">Claude가 대국을 분석 중입니다<span class="dot-anim"></span></div>
+      <div style="color:rgba(255,255,255,0.5);font-size:14px">Gemini가 대국을 분석 중입니다<span class="dot-anim"></span></div>
     </div>
     <div class="analysis-content" id="analysis-content"></div>
   </div>
@@ -190,6 +204,35 @@ let moveHistory = [];
 let winStones   = [];
 let hoverCell   = null;
 let thinkTimer  = null;
+
+// ── API Key ──
+function loadApiKey() {
+  const saved = localStorage.getItem('gemini_api_key');
+  const statusEl = document.getElementById('api-key-status');
+  if (saved) {
+    document.getElementById('api-key-input').value = saved;
+    statusEl.textContent = '저장됨';
+    statusEl.classList.add('saved');
+  } else {
+    statusEl.textContent = '미설정';
+    statusEl.classList.remove('saved');
+  }
+  return saved;
+}
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  const statusEl = document.getElementById('api-key-status');
+  if (!val) {
+    localStorage.removeItem('gemini_api_key');
+    statusEl.textContent = '미설정';
+    statusEl.classList.remove('saved');
+    return;
+  }
+  localStorage.setItem('gemini_api_key', val);
+  statusEl.textContent = '저장됨';
+  statusEl.classList.add('saved');
+}
 
 // ── Init ──
 function newGame() {
@@ -521,6 +564,12 @@ function addHistory(r, c, player, num) {
 
 // ── Analysis ──
 async function openAnalysis() {
+  const apiKey = (document.getElementById('api-key-input').value || '').trim();
+  if (!apiKey) {
+    alert('먼저 상단의 Gemini API 키를 입력하고 "저장" 버튼을 눌러주세요.');
+    return;
+  }
+
   document.getElementById('modal-backdrop').classList.add('open');
   document.getElementById('analysis-loading').style.display = 'block';
   document.getElementById('analysis-content').classList.remove('visible');
@@ -557,16 +606,18 @@ async function openAnalysis() {
 }`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+          responseMimeType: 'application/json'
+        }
       })
     });
 
@@ -576,7 +627,16 @@ async function openAnalysis() {
     }
 
     const data = await res.json();
-    const raw  = (data.content || []).map(b => b.text || '').join('');
+    const finishReason = data.candidates?.[0]?.finishReason;
+    const raw  = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+
+    if (finishReason === 'MAX_TOKENS') {
+      throw new Error('응답이 토큰 한도를 초과해 잘렸습니다. (대국이 길어 분석 내용이 늘어난 경우 발생할 수 있습니다)');
+    }
+    if (!raw) {
+      throw new Error('Gemini 응답이 비어있습니다. (finishReason: ' + (finishReason || '알수없음') + ')');
+    }
+
     const clean = raw.replace(/```json|```/g, '').trim();
     const analysis = JSON.parse(clean);
     renderAnalysis(analysis);
@@ -650,6 +710,7 @@ function closeAnalysis() {
 }
 
 // ── Start ──
+loadApiKey();
 newGame();
 </script>
 </body>
