@@ -5,714 +5,732 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>오목 vs Gemini</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap');
-  :root {
-    --ink: #0d0d0d; --paper: #f5f0e8;
-    --gold: #c8943a; --board: #d4a855; --board-dark: #b8892e;
-    --gemini-blue: #4285f4; --gemini-glow: rgba(66,133,244,0.3);
-    --win-red: #e53935;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: var(--ink); color: var(--paper); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Space+Mono:wght@400;700&display=swap');
+:root{
+  --ink:#0d0d0d;--paper:#f5f0e8;
+  --gold:#c8943a;--gold2:#e8b84b;
+  --board:#d4a855;--board-dark:#b8892e;
+  --blue:#4285f4;--blue-glow:rgba(66,133,244,.25);
+  --red:#e53935;--green:#43a047;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--ink);color:var(--paper);min-height:100vh;display:flex;flex-direction:column;align-items:center}
 
-  header { width: 100%; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.08); }
-  .logo { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; letter-spacing: 2px; color: var(--gold); }
-  .gemini-tag { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--gemini-blue); font-weight: 700; }
+/* Header */
+header{width:100%;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);gap:12px}
+.logo{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;letter-spacing:2px;color:var(--gold);white-space:nowrap}
 
-  .api-key-box { display: flex; align-items: center; gap: 6px; }
-  .api-key-box input { font-family: 'Space Mono', monospace; font-size: 11px; width: 150px; padding: 6px 9px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: var(--paper); }
-  @media (max-width: 480px) { .api-key-box input { width: 110px; } }
-  .api-key-box input::placeholder { color: rgba(255,255,255,0.3); }
-  .api-key-box input:focus { outline: none; border-color: var(--gold); }
-  .api-key-box button { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; background: var(--gold); color: var(--ink); }
-  .api-key-box button:hover { background: #d9a840; }
-  .api-key-status { font-size: 10px; color: rgba(255,255,255,0.35); font-family: 'Space Mono', monospace; }
-  .api-key-status.saved { color: #66bb6a; }
+/* Level bar */
+.level-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.level-num{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;line-height:1}
+.level-num .lv{color:rgba(255,255,255,.3);font-size:12px;margin-right:4px}
+.level-num .n{color:var(--gold2)}
+.level-num .max{font-size:11px;color:rgba(255,255,255,.25)}
+.level-track{width:180px;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.level-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s ease}
+.level-sub{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:1px}
 
-  main { flex: 1; display: flex; gap: 24px; padding: 20px 16px; max-width: 1080px; width: 100%; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+.gemini-tag{font-family:'Space Mono',monospace;font-size:12px;color:var(--blue);font-weight:700;white-space:nowrap}
 
-  .side-panel { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+/* API Key notice */
+.api-notice{width:100%;padding:10px 24px;background:rgba(66,133,244,.08);border-bottom:1px solid rgba(66,133,244,.15);font-size:12px;color:rgba(66,133,244,.8);display:flex;align-items:center;gap:8px}
+.api-notice.ok{background:rgba(67,160,71,.08);border-color:rgba(67,160,71,.15);color:rgba(67,160,71,.9)}
+.api-notice.err{background:rgba(229,57,53,.08);border-color:rgba(229,57,53,.15);color:rgba(229,57,53,.8)}
+.api-key-input-row{display:flex;gap:8px;align-items:center;flex:1}
+.api-key-input-row input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(66,133,244,.3);border-radius:6px;padding:6px 10px;color:#fff;font-family:'Space Mono',monospace;font-size:11px;outline:none}
+.api-key-input-row input:focus{border-color:var(--blue)}
+.btn-xs{font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:none;cursor:pointer;background:var(--blue);color:#fff;white-space:nowrap}
 
-  .player-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; transition: border-color 0.3s, box-shadow 0.3s; }
-  .player-card.active { border-color: var(--gold); box-shadow: 0 0 18px rgba(200,148,58,0.18); }
-  .player-card.gemini-card.active { border-color: var(--gemini-blue); box-shadow: 0 0 18px var(--gemini-glow); }
-  .player-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.35); margin-bottom: 6px; text-transform: uppercase; }
-  .player-name { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .stone-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
-  .stone-dot.black { background: radial-gradient(circle at 35% 30%, #666, #000); box-shadow: 1px 2px 4px rgba(0,0,0,0.8); }
-  .stone-dot.white { background: radial-gradient(circle at 35% 30%, #fff, #ccc); box-shadow: 1px 2px 4px rgba(0,0,0,0.4); }
+/* Main */
+main{flex:1;display:flex;gap:20px;padding:16px 12px;max-width:1040px;width:100%;align-items:flex-start;justify-content:center;flex-wrap:wrap}
 
-  .think-indicator { display: none; font-size: 11px; color: var(--gemini-blue); margin-top: 6px; font-family: 'Space Mono', monospace; }
-  .think-indicator.visible { display: block; }
-  .dot-anim::after { content: '...'; animation: dots 1.2s steps(4,end) infinite; }
-  @keyframes dots { 0%,20%{content:''}30%,50%{content:'.'}60%,80%{content:'..'}90%,100%{content:'...'} }
+/* Side */
+.side-panel{width:188px;flex-shrink:0;display:flex;flex-direction:column;gap:12px}
+.pcard{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;transition:border-color .3s,box-shadow .3s}
+.pcard.active{border-color:var(--gold);box-shadow:0 0 14px rgba(200,148,58,.18)}
+.pcard.ai-card.active{border-color:var(--blue);box-shadow:0 0 14px var(--blue-glow)}
+.plbl{font-size:9px;letter-spacing:3px;color:rgba(255,255,255,.32);margin-bottom:5px;text-transform:uppercase}
+.pname{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.sdot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
+.sdot.b{background:radial-gradient(circle at 35% 30%,#666,#000);box-shadow:1px 2px 4px rgba(0,0,0,.8)}
+.sdot.w{background:radial-gradient(circle at 35% 30%,#fff,#ccc);box-shadow:1px 2px 4px rgba(0,0,0,.4)}
+.think{display:none;font-size:11px;color:var(--blue);margin-top:5px;font-family:'Space Mono',monospace}
+.think.on{display:block}
+.dot::after{content:'...';animation:dots 1.2s steps(4,end) infinite}
+@keyframes dots{0%,20%{content:''}30%,50%{content:'.'}60%,80%{content:'..'}90%,100%{content:'...'}}
 
-  .move-counter { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: var(--gold); text-align: center; }
-  .move-label { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.3); text-align: center; text-transform: uppercase; margin-top: 2px; }
+.mctr{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:var(--gold);text-align:center}
+.mlbl{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.28);text-align:center;text-transform:uppercase;margin-top:1px}
 
-  .history-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px; max-height: 190px; overflow-y: auto; }
-  .history-box::-webkit-scrollbar { width: 3px; }
-  .history-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
-  .history-title { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.3); margin-bottom: 6px; text-transform: uppercase; }
-  .history-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-family: 'Space Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.5); border-bottom: 1px solid rgba(255,255,255,0.04); }
-  .history-item:last-child { border-bottom: none; }
-  .h-stone { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-  .h-black { background: #444; } .h-white { background: #ddd; }
+/* Win / lose streak */
+.streak-row{display:flex;gap:8px;justify-content:center}
+.streak{text-align:center;flex:1;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px 4px}
+.streak-val{font-family:'Space Mono',monospace;font-size:18px;font-weight:700}
+.streak-val.w{color:var(--gold)}.streak-val.l{color:#ef5350}
+.streak-lbl{font-size:9px;letter-spacing:1px;color:rgba(255,255,255,.28);text-transform:uppercase;margin-top:2px}
 
-  /* Board */
-  .board-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .board-outer { background: var(--board); border-radius: 4px; padding: 24px; box-shadow: 0 0 0 3px var(--board-dark), 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.2); }
-  #board-canvas { display: block; cursor: crosshair; }
+.hbox{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:9px;max-height:175px;overflow-y:auto}
+.hbox::-webkit-scrollbar{width:3px}.hbox::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.htitle{font-size:9px;letter-spacing:3px;color:rgba(255,255,255,.27);margin-bottom:5px;text-transform:uppercase}
+.hitem{display:flex;align-items:center;gap:5px;padding:2px 0;font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,.46);border-bottom:1px solid rgba(255,255,255,.04)}
+.hitem:last-child{border-bottom:none}
+.hs{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hs.b{background:#444}.hs.w{background:#ddd}
 
-  .status-bar { text-align: center; font-size: 14px; color: rgba(255,255,255,0.6); padding: 6px; min-height: 32px; font-weight: 500; }
-  .status-bar.win { color: var(--gold); font-weight: 700; font-size: 15px; }
-  .status-bar.lose { color: #ef5350; font-weight: 700; font-size: 15px; }
+/* Board */
+.board-wrap{display:flex;flex-direction:column;align-items:center;gap:9px}
+.board-outer{background:var(--board);border-radius:4px;padding:22px;box-shadow:0 0 0 3px var(--board-dark),0 18px 55px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.2)}
+#bc{display:block;cursor:crosshair}
 
-  .controls { display: flex; gap: 10px; justify-content: center; }
-  .btn { font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 700; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: var(--gold); color: var(--ink); }
-  .btn-primary:hover { background: #d9a840; transform: translateY(-1px); }
-  .btn-secondary { background: rgba(255,255,255,0.08); color: var(--paper); border: 1px solid rgba(255,255,255,0.12); }
-  .btn-secondary:hover { background: rgba(255,255,255,0.13); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.sbar{text-align:center;font-size:13px;color:rgba(255,255,255,.55);padding:5px;min-height:30px;font-weight:500}
+.sbar.win{color:var(--gold);font-weight:700;font-size:15px}
+.sbar.lose{color:#ef5350;font-weight:700;font-size:15px}
 
-  /* Modal */
-  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-  .modal-backdrop.open { display: flex; }
-  .modal { background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; width: 100%; max-width: 660px; max-height: 88vh; overflow-y: auto; padding: 28px; }
-  .modal::-webkit-scrollbar { width: 4px; }
-  .modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-  .modal-title { font-size: 20px; font-weight: 900; }
-  .modal-title span { color: var(--gold); }
-  .modal-close { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 22px; cursor: pointer; }
-  .modal-close:hover { color: white; }
+.controls{display:flex;gap:9px;justify-content:center}
+.btn{font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;padding:8px 18px;border-radius:8px;border:none;cursor:pointer;transition:all .2s}
+.btn-p{background:var(--gold);color:var(--ink)}.btn-p:hover{background:#d9a840;transform:translateY(-1px)}
+.btn-s{background:rgba(255,255,255,.08);color:var(--paper);border:1px solid rgba(255,255,255,.12)}.btn-s:hover{background:rgba(255,255,255,.13)}
+.btn:disabled{opacity:.36;cursor:not-allowed;transform:none!important}
 
-  .analysis-loading { text-align: center; padding: 40px; }
-  .spinner { width: 38px; height: 38px; border: 3px solid rgba(66,133,244,0.2); border-top-color: var(--gemini-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Level up toast */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid var(--gold);border-radius:12px;padding:14px 28px;font-size:15px;font-weight:700;color:var(--gold2);box-shadow:0 8px 32px rgba(0,0,0,.6);opacity:0;transition:opacity .4s,transform .4s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .analysis-content { display: none; }
-  .analysis-content.visible { display: block; }
+/* Result overlay */
+.result-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:150;align-items:center;justify-content:center}
+.result-overlay.open{display:flex}
+.result-box{background:#111;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:36px 40px;text-align:center;max-width:360px;width:90%}
+.result-icon{font-size:52px;margin-bottom:12px}
+.result-title{font-size:26px;font-weight:900;margin-bottom:6px}
+.result-title.win{color:var(--gold2)}
+.result-title.lose{color:#ef5350}
+.result-sub{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:20px;line-height:1.6}
+.result-level{font-family:'Space Mono',monospace;font-size:14px;color:rgba(255,255,255,.5);margin-bottom:22px}
+.result-level .hl{color:var(--gold);font-size:18px;font-weight:700}
+.result-btns{display:flex;gap:10px;justify-content:center}
 
-  .analysis-section { margin-bottom: 22px; }
-  .analysis-section-title { font-size: 10px; letter-spacing: 3px; color: var(--gemini-blue); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .analysis-section-title::after { content: ''; flex: 1; height: 1px; background: rgba(66,133,244,0.2); }
-  .analysis-text { font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.78); }
-
-  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
-  .score-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; }
-  .score-label { font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.35); text-transform: uppercase; margin-bottom: 6px; }
-  .score-value { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; color: var(--gold); }
-  .score-value.blue { color: var(--gemini-blue); }
-
-  .key-moves { display: flex; flex-direction: column; gap: 8px; }
-  .key-move { padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid transparent; }
-  .key-move.critical { border-left-color: var(--win-red); }
-  .key-move.good { border-left-color: #43a047; }
-  .key-move.mistake { border-left-color: #ff9800; }
-  .move-badge { font-family: 'Space Mono', monospace; font-size: 10px; background: rgba(255,255,255,0.07); padding: 2px 8px; border-radius: 4px; color: rgba(255,255,255,0.6); }
-  .move-desc { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; margin-top: 4px; }
-  .error-msg { background: rgba(229,57,53,0.1); border: 1px solid rgba(229,57,53,0.3); border-radius: 8px; padding: 16px; color: #ef9a9a; font-size: 14px; line-height: 1.7; }
+/* Analysis modal */
+.mb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;align-items:center;justify-content:center;padding:16px}
+.mb.open{display:flex}
+.modal{background:#111;border:1px solid rgba(255,255,255,.1);border-radius:16px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:24px}
+.modal::-webkit-scrollbar{width:4px}.modal::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.mtitle{font-size:18px;font-weight:900}.mtitle span{color:var(--gold)}
+.mclose{background:none;border:none;color:rgba(255,255,255,.4);font-size:20px;cursor:pointer;padding:2px 6px}.mclose:hover{color:#fff}
+.aloading{text-align:center;padding:36px}
+.spinner{width:34px;height:34px;border:3px solid rgba(66,133,244,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ares{display:none}.ares.on{display:block}
+.asec{margin-bottom:18px}
+.asec-t{font-size:10px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.asec-t::after{content:'';flex:1;height:1px;background:rgba(66,133,244,.2)}
+.atext{font-size:13px;line-height:1.8;color:rgba(255,255,255,.76)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sitem{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:12px}
+.slbl{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.32);text-transform:uppercase;margin-bottom:4px}
+.sval{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--gold)}
+.sval.bl{color:var(--blue)}
+.kmoves{display:flex;flex-direction:column;gap:7px}
+.km{padding:10px;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid transparent}
+.km.critical{border-left-color:#e53935}.km.good{border-left-color:#43a047}.km.mistake{border-left-color:#ff9800}
+.mbadge{font-family:'Space Mono',monospace;font-size:10px;background:rgba(255,255,255,.07);padding:2px 7px;border-radius:4px;color:rgba(255,255,255,.58)}
+.mdesc{font-size:13px;color:rgba(255,255,255,.68);line-height:1.5;margin-top:3px}
+.errbox{background:rgba(229,57,53,.1);border:1px solid rgba(229,57,53,.3);border-radius:8px;padding:14px;color:#ef9a9a;font-size:13px;line-height:1.7}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">五目並べ</div>
-  <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35)">HUMAN VS AI</div>
-  <div class="api-key-box">
-    <input type="password" id="api-key-input" placeholder="Gemini API 키 (AIza...)">
-    <button onclick="saveApiKey()">저장</button>
-    <span class="api-key-status" id="api-key-status">미설정</span>
+  <div class="level-bar">
+    <div class="level-num">
+      <span class="lv">LV</span><span class="n" id="lv-num">1</span>
+      <span class="max"> / 500</span>
+    </div>
+    <div class="level-track"><div class="level-fill" id="lv-fill" style="width:.2%"></div></div>
+    <div class="level-sub" id="lv-sub">입문</div>
   </div>
+  <div class="gemini-tag">✦ GEMINI</div>
 </header>
 
+<!-- API Key Row -->
+<div class="api-notice" id="api-notice">
+  <span>🔑</span>
+  <div class="api-key-input-row">
+    <span style="white-space:nowrap;font-size:11px">Gemini API Key (GEMINI_API_KEY):</span>
+    <input id="key-input" type="password" placeholder="AIza..." autocomplete="off" onkeydown="if(event.key==='Enter')saveKey()"/>
+    <button class="btn-xs" onclick="saveKey()">저장</button>
+  </div>
+  <span id="key-status" style="white-space:nowrap;font-size:11px"></span>
+</div>
+
 <main>
-  <!-- Left Panel -->
+  <!-- Left panel -->
   <div class="side-panel">
-    <div class="player-card active" id="card-player">
-      <div class="player-label">플레이어</div>
-      <div class="player-name"><div class="stone-dot black"></div>흑돌</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px">선공</div>
+    <div class="pcard active" id="card-p">
+      <div class="plbl">플레이어</div>
+      <div class="pname"><div class="sdot b"></div>흑돌</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.27);margin-top:3px">선공</div>
     </div>
     <div style="text-align:center">
-      <div class="move-counter" id="move-count">0</div>
-      <div class="move-label">수(手)</div>
+      <div class="mctr" id="move-cnt">0</div>
+      <div class="mlbl">수(手)</div>
     </div>
-    <div class="player-card gemini-card" id="card-gemini">
-      <div class="player-label">상대</div>
-      <div class="player-name"><div class="stone-dot white"></div>백돌</div>
-      <div class="think-indicator" id="think-ind"><span class="dot-anim">생각 중</span></div>
-      <div style="font-size:11px;color:rgba(66,133,244,0.5);margin-top:4px">Gemini AI</div>
+    <div class="pcard ai-card" id="card-ai">
+      <div class="plbl">Gemini AI</div>
+      <div class="pname"><div class="sdot w"></div>백돌</div>
+      <div class="think" id="think"><span class="dot">생각 중</span></div>
     </div>
-    <div class="history-box">
-      <div class="history-title">기보</div>
-      <div id="history-list"></div>
+    <div class="streak-row">
+      <div class="streak"><div class="streak-val w" id="wins">0</div><div class="streak-lbl">연승</div></div>
+      <div class="streak"><div class="streak-val l" id="losses">0</div><div class="streak-lbl">패배</div></div>
+    </div>
+    <div class="hbox">
+      <div class="htitle">기보</div>
+      <div id="hlist"></div>
     </div>
   </div>
 
   <!-- Board -->
   <div class="board-wrap">
-    <div class="board-outer">
-      <canvas id="board-canvas"></canvas>
-    </div>
-    <div class="status-bar" id="status-bar">흑돌(나)의 차례입니다</div>
+    <div class="board-outer"><canvas id="bc"></canvas></div>
+    <div class="sbar" id="sbar">흑돌(나)의 차례입니다</div>
     <div class="controls">
-      <button class="btn btn-secondary" onclick="undoMove()">↩ 무르기</button>
-      <button class="btn btn-primary" onclick="newGame()">새 게임</button>
-      <button class="btn btn-secondary" id="btn-analyze" onclick="openAnalysis()" disabled>🔍 AI 분석</button>
+      <button class="btn btn-s" onclick="undoMove()">↩ 무르기</button>
+      <button class="btn btn-p" onclick="confirmNewGame()">새 게임</button>
+      <button class="btn btn-s" id="btn-analyze" onclick="openAnalysis()" disabled>🔍 분석</button>
     </div>
   </div>
 </main>
 
-<!-- Analysis Modal -->
-<div class="modal-backdrop" id="modal-backdrop">
+<!-- Level up toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Result overlay -->
+<div class="result-overlay" id="result-overlay">
+  <div class="result-box">
+    <div class="result-icon" id="res-icon"></div>
+    <div class="result-title" id="res-title"></div>
+    <div class="result-sub" id="res-sub"></div>
+    <div class="result-level" id="res-level"></div>
+    <div class="result-btns">
+      <button class="btn btn-p" id="res-next" onclick="nextGame()">다음 대국</button>
+      <button class="btn btn-s" onclick="openAnalysis();closeResult()">🔍 분석</button>
+    </div>
+  </div>
+</div>
+
+<!-- Analysis modal -->
+<div class="mb" id="mb">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">대국 <span>AI 분석</span></div>
-      <button class="modal-close" onclick="closeAnalysis()">✕</button>
+    <div class="mhdr">
+      <div class="mtitle">대국 <span>AI 분석</span></div>
+      <button class="mclose" onclick="closeAnalysis()">✕</button>
     </div>
-    <div class="analysis-loading" id="analysis-loading">
+    <div class="aloading" id="aloading" style="display:none">
       <div class="spinner"></div>
-      <div style="color:rgba(255,255,255,0.5);font-size:14px">Gemini가 대국을 분석 중입니다<span class="dot-anim"></span></div>
+      <div style="color:rgba(255,255,255,.48);font-size:13px">분석 중입니다<span class="dot"></span></div>
     </div>
-    <div class="analysis-content" id="analysis-content"></div>
+    <div class="ares" id="ares"></div>
   </div>
 </div>
 
 <script>
-// ── Constants ──
-const N = 15;         // 15x15 board
-const CELL = 34;      // pixels between intersections
-const PAD  = 28;      // padding inside board-outer (canvas offset)
-const STONE_R = 14;   // stone radius
+// ──────────────────────────────
+//  Constants
+// ──────────────────────────────
+const N=15, CELL=34, STONE_R=14, CV=(N-1)*CELL;
+const COLS='ABCDEFGHIJKLMNO';
 
-// Canvas size = (N-1) lines * CELL  (intersections only)
-const CV = (N - 1) * CELL;
-
-const canvas = document.getElementById('board-canvas');
-const ctx    = canvas.getContext('2d');
-canvas.width  = CV;
-canvas.height = CV;
-
-// ── State ──
-let board       = [];
-let currentPlayer = 1; // 1=black(human), 2=white(AI)
-let gameOver    = false;
-let moveHistory = [];
-let winStones   = [];
-let hoverCell   = null;
-let thinkTimer  = null;
-
-// ── API Key ──
-function loadApiKey() {
-  const saved = localStorage.getItem('gemini_api_key');
-  const statusEl = document.getElementById('api-key-status');
-  if (saved) {
-    document.getElementById('api-key-input').value = saved;
-    statusEl.textContent = '저장됨';
-    statusEl.classList.add('saved');
-  } else {
-    statusEl.textContent = '미설정';
-    statusEl.classList.remove('saved');
-  }
-  return saved;
+const LEVEL_NAMES=[
+  '입문','초보','아마추어','중급','상급','고단','전문','마스터','그랜드마스터','전설'
+];
+function levelName(lv){
+  const idx=Math.min(Math.floor((lv-1)/50),LEVEL_NAMES.length-1);
+  return LEVEL_NAMES[idx];
 }
 
-function saveApiKey() {
-  const val = document.getElementById('api-key-input').value.trim();
-  const statusEl = document.getElementById('api-key-status');
-  if (!val) {
-    localStorage.removeItem('gemini_api_key');
-    statusEl.textContent = '미설정';
-    statusEl.classList.remove('saved');
-    return;
-  }
-  localStorage.setItem('gemini_api_key', val);
-  statusEl.textContent = '저장됨';
-  statusEl.classList.add('saved');
+// ──────────────────────────────
+//  State
+// ──────────────────────────────
+let board=[], cur=1, over=false, hist=[], wins=[], hover=null, timer=null;
+let level=1, winStreak=0, lossCount=0;
+let geminiKey='';
+let analysisCache=null;
+
+const canvas=document.getElementById('bc'), ctx=canvas.getContext('2d');
+canvas.width=CV; canvas.height=CV;
+
+// ──────────────────────────────
+//  API Key
+// ──────────────────────────────
+function saveKey(){
+  const k=document.getElementById('key-input').value.trim();
+  if(!k){alert('API 키를 입력해주세요');return}
+  geminiKey=k;
+  sessionStorage.setItem('gk',k);
+  showKeyStatus('ok','✅ 키 설정 완료 — Gemini AI 활성화');
+}
+function loadKey(){
+  const k=sessionStorage.getItem('gk');
+  if(k){geminiKey=k;document.getElementById('key-input').value=k;showKeyStatus('ok','✅ 키 로드됨')}
+}
+function showKeyStatus(type,msg){
+  const el=document.getElementById('key-status');
+  el.textContent=msg;
+  document.getElementById('api-notice').className='api-notice '+(type==='ok'?'ok':'err');
 }
 
-// ── Init ──
-function newGame() {
-  clearTimeout(thinkTimer);
-  board         = Array.from({length:N}, () => new Array(N).fill(0));
-  currentPlayer = 1;
-  gameOver      = false;
-  moveHistory   = [];
-  winStones     = [];
-  hoverCell     = null;
-
-  document.getElementById('history-list').innerHTML = '';
-  document.getElementById('think-ind').classList.remove('visible');
-  document.getElementById('btn-analyze').disabled = true;
-  document.getElementById('move-count').textContent = '0';
-  setStatus('흑돌(나)의 차례입니다');
-  setActive(1);
-  drawBoard();
+// ──────────────────────────────
+//  Level helpers
+// ──────────────────────────────
+function updateLevelUI(){
+  document.getElementById('lv-num').textContent=level;
+  document.getElementById('lv-fill').style.width=((level-1)/499*100).toFixed(2)+'%';
+  document.getElementById('lv-sub').textContent=levelName(level);
+  document.getElementById('wins').textContent=winStreak;
+  document.getElementById('losses').textContent=lossCount;
 }
 
-// ── Coord helpers ──
-// pixel position of intersection (r,c)
-function px(c) { return c * CELL; }
-function py(r) { return r * CELL; }
-
-// nearest intersection from mouse pixel (mx, my)
-function nearestCell(mx, my) {
-  const c = Math.round(mx / CELL);
-  const r = Math.round(my / CELL);
-  if (r < 0 || r >= N || c < 0 || c >= N) return null;
-  return {r, c};
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ── Draw ──
-function drawBoard() {
-  ctx.clearRect(0, 0, CV, CV);
+// Gemini strength: level 1=weakest,500=strongest
+// depth & randomness controlled by prompt
+function levelDesc(lv){
+  if(lv<=50)  return `당신은 오목을 갓 배운 초보자처럼 둡니다. 랜덤하게 두고, 상대 위협을 거의 무시합니다. 실수를 많이 하세요.`;
+  if(lv<=150) return `당신은 초보 수준입니다. 간단한 위협만 막고 연속 3개 이상을 잘 만들지 못합니다.`;
+  if(lv<=250) return `당신은 중급 수준입니다. 4목을 만들거나 막고, 기본적인 전략을 씁니다.`;
+  if(lv<=350) return `당신은 상급 수준입니다. 쌍3, 4목 공격을 구사하고 상대 위협을 잘 방어합니다.`;
+  if(lv<=450) return `당신은 고수 수준입니다. 여러 수 앞을 읽고, 복합 위협과 필승 패턴을 만듭니다.`;
+  return `당신은 오목 최고수입니다. 완벽한 전략으로 항상 최선의 수를 둡니다.`;
+}
 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(0,0,0,0.38)';
-  ctx.lineWidth   = 1;
-  for (let i = 0; i < N; i++) {
-    ctx.beginPath(); ctx.moveTo(px(i), 0);       ctx.lineTo(px(i), CV); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,     py(i));   ctx.lineTo(CV,    py(i)); ctx.stroke();
+// ──────────────────────────────
+//  Gemini API move
+// ──────────────────────────────
+async function getGeminiMove(){
+  if(!geminiKey){
+    // fallback to heuristic
+    return heuristicMove();
   }
 
-  // Star points
-  const stars = [[3,3],[3,7],[3,11],[7,3],[7,7],[7,11],[11,3],[11,7],[11,11]];
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  stars.forEach(([r,c]) => {
-    ctx.beginPath();
-    ctx.arc(px(c), py(r), 3.5, 0, Math.PI*2);
-    ctx.fill();
-  });
-
-  // Ghost stone
-  if (hoverCell && !gameOver && currentPlayer === 1 && board[hoverCell.r][hoverCell.c] === 0) {
-    ctx.save();
-    ctx.globalAlpha = 0.35;
-    drawStone(ctx, hoverCell.r, hoverCell.c, 1);
-    ctx.restore();
-  }
-
-  // Stones
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
-      if (board[r][c] !== 0) {
-        const isWin = winStones.some(([wr,wc]) => wr===r && wc===c);
-        drawStone(ctx, r, c, board[r][c], isWin);
-      }
+  // Build board string
+  let boardStr='';
+  for(let r=0;r<N;r++){
+    for(let c=0;c<N;c++){
+      boardStr+=board[r][c]===1?'●':board[r][c]===2?'○':'.';
     }
+    boardStr+='\n';
   }
 
-  // Last move marker
-  if (moveHistory.length > 0) {
-    const last = moveHistory[moveHistory.length - 1];
-    ctx.strokeStyle = last.player === 1 ? 'rgba(255,200,0,0.85)' : 'rgba(80,80,80,0.85)';
-    ctx.lineWidth   = 2;
-    ctx.beginPath();
-    ctx.arc(px(last.c), py(last.r), 5, 0, Math.PI*2);
-    ctx.stroke();
-  }
-}
+  const histStr=hist.slice(-10).map(m=>`${m.n}.${COLS[m.c]}${m.r+1}(${m.p===1?'흑':'백'})`).join(', ');
+  const prompt=`당신은 오목(Gomoku) AI 플레이어입니다. 백돌(○)로 플레이합니다.
+${levelDesc(level)}
 
-function drawStone(ctx, r, c, player, isWin = false) {
-  const x = px(c), y = py(r);
-  const grad = ctx.createRadialGradient(x - STONE_R*0.3, y - STONE_R*0.3, STONE_R*0.05, x, y, STONE_R);
+현재 레벨: ${level}/500
 
-  if (player === 1) {
-    grad.addColorStop(0, '#888');
-    grad.addColorStop(1, '#000');
-  } else {
-    grad.addColorStop(0, '#fff');
-    grad.addColorStop(1, '#bbb');
-  }
+15x15 오목판 (행 1-15, 열 A-O):
+열: A B C D E F G H I J K L M N O
+${Array.from({length:N},(_,r)=>`${String(r+1).padStart(2)} ${board[r].map(v=>v===1?'●':v===2?'○':'.').join(' ')}`).join('\n')}
 
-  ctx.beginPath();
-  ctx.arc(x, y, STONE_R, 0, Math.PI*2);
-  ctx.fillStyle = grad;
-  ctx.fill();
+최근 기보: ${histStr||'없음'}
+흑(●)=상대방, 백(○)=나(AI)
 
-  ctx.shadowColor   = 'rgba(0,0,0,0.55)';
-  ctx.shadowBlur    = 6;
-  ctx.shadowOffsetX = 2;
-  ctx.shadowOffsetY = 3;
-  ctx.fill();
-  ctx.shadowColor = 'transparent';
+규칙:
+- 빈 칸(.)에만 둘 수 있음
+- 5개 연속(가로/세로/대각선)이 되면 승리
+- 상대가 5목이 되려는 것을 막아야 함
 
-  if (isWin) {
-    ctx.strokeStyle = '#e53935';
-    ctx.lineWidth   = 3;
-    ctx.stroke();
-  }
-}
+레벨에 맞는 실력으로 다음 수를 하나 선택하세요.
+반드시 다음 JSON만 응답하세요 (다른 텍스트 없이):
+{"row":숫자(1-15),"col":"문자(A-O)","reason":"한줄설명"}`;
 
-// ── Mouse events ──
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx   = (e.clientX - rect.left) * (CV / rect.width);
-  const my   = (e.clientY - rect.top)  * (CV / rect.height);
-  hoverCell  = nearestCell(mx, my);
-  drawBoard();
-});
-
-canvas.addEventListener('mouseleave', () => { hoverCell = null; drawBoard(); });
-
-canvas.addEventListener('click', e => {
-  if (gameOver || currentPlayer !== 1) return;
-  const rect = canvas.getBoundingClientRect();
-  const mx   = (e.clientX - rect.left) * (CV / rect.width);
-  const my   = (e.clientY - rect.top)  * (CV / rect.height);
-  const cell = nearestCell(mx, my);
-  if (!cell || board[cell.r][cell.c] !== 0) return;
-  doMove(cell.r, cell.c, 1);
-});
-
-// ── Move logic ──
-function doMove(r, c, player) {
-  board[r][c] = player;
-  const num   = moveHistory.length + 1;
-  moveHistory.push({r, c, player, num});
-  addHistory(r, c, player, num);
-  document.getElementById('move-count').textContent = num;
-  drawBoard();
-
-  if (checkWin(r, c, player)) { endGame(player === 1 ? 'win' : 'lose'); return; }
-  if (moveHistory.length === N * N) { endGame('draw'); return; }
-
-  if (player === 1) {
-    currentPlayer = 2;
-    setActive(2);
-    setStatus('Gemini AI가 생각 중입니다...');
-    document.getElementById('think-ind').classList.add('visible');
-    thinkTimer = setTimeout(aiMove, 500 + Math.random() * 500);
-  } else {
-    currentPlayer = 1;
-    setActive(1);
-    setStatus('흑돌(나)의 차례입니다');
+  try{
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{temperature: level<=100?1.2:level<=300?0.7:0.2, maxOutputTokens:200}
+      })
+    });
+    if(!res.ok) throw new Error('Gemini API '+res.status);
+    const data=await res.json();
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    const r=parseInt(parsed.row)-1;
+    const c=COLS.indexOf(parsed.col.toUpperCase());
+    if(r>=0&&r<N&&c>=0&&c<N&&board[r][c]===0) return {r,c,reason:parsed.reason};
+    throw new Error('invalid cell');
+  }catch(e){
+    console.warn('Gemini fallback:',e.message);
+    return heuristicMove();
   }
 }
 
-// ── AI ──
-function aiMove() {
-  document.getElementById('think-ind').classList.remove('visible');
-  const move = getBestMove();
-  if (move) doMove(move.r, move.c, 2);
-}
-
-function getBestMove() {
-  let best = null, bestScore = -Infinity;
-  for (let r = 0; r < N; r++) {
-    for (let c = 0; c < N; c++) {
-      if (board[r][c] !== 0) continue;
-      const s = scorePos(r, c, 2) * 2.2 + scorePos(r, c, 1) * 1.9 + proximity(r, c) * 0.4;
-      if (s > bestScore) { bestScore = s; best = {r, c}; }
-    }
+// ──────────────────────────────
+//  Heuristic fallback
+// ──────────────────────────────
+function heuristicMove(){
+  // randomness: high at low levels
+  const rnd=Math.max(0,(200-level)/200);
+  let best=null,bs=-Infinity;
+  const empty=[];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(!board[r][c]) empty.push({r,c});
+  if(!empty.length) return null;
+  for(const {r,c} of empty){
+    let s=sc(r,c,2)*2.2+sc(r,c,1)*1.9+prox(r,c)*.4+Math.random()*rnd*500;
+    if(s>bs){bs=s;best={r,c,reason:'계산된 최선의 수'}}
   }
   return best;
 }
-
-function scorePos(r, c, p) {
-  board[r][c] = p;
-  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
-  let total = 0;
-  for (const [dr, dc] of dirs) {
-    let cnt = 1, open = 0;
-    for (let d = 1; d < 5; d++) {
-      const nr = r+dr*d, nc = c+dc*d;
-      if (nr<0||nr>=N||nc<0||nc>=N) break;
-      if (board[nr][nc] === p) cnt++;
-      else { if (board[nr][nc] === 0) open++; break; }
-    }
-    for (let d = 1; d < 5; d++) {
-      const nr = r-dr*d, nc = c-dc*d;
-      if (nr<0||nr>=N||nc<0||nc>=N) break;
-      if (board[nr][nc] === p) cnt++;
-      else { if (board[nr][nc] === 0) open++; break; }
-    }
-    const w = [0,1,10,100,1000,100000];
-    total += w[Math.min(cnt, 5)] * (open > 0 ? 1 : 0.5);
+function sc(r,c,p){
+  board[r][c]=p;
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];let t=0;
+  for(const[dr,dc]of dirs){
+    let cnt=1,open=0;
+    for(let d=1;d<5;d++){const nr=r+dr*d,nc=c+dc*d;if(nr<0||nr>=N||nc<0||nc>=N)break;if(board[nr][nc]===p)cnt++;else{if(!board[nr][nc])open++;break}}
+    for(let d=1;d<5;d++){const nr=r-dr*d,nc=c-dc*d;if(nr<0||nr>=N||nc<0||nc>=N)break;if(board[nr][nc]===p)cnt++;else{if(!board[nr][nc])open++;break}}
+    const w=[0,1,10,100,1000,100000];t+=w[Math.min(cnt,5)]*(open>0?1:.5);
   }
-  board[r][c] = 0;
-  return total;
+  board[r][c]=0;return t;
 }
-
-function proximity(r, c) {
-  let s = 0;
-  for (let dr = -2; dr <= 2; dr++)
-    for (let dc = -2; dc <= 2; dc++) {
-      const nr = r+dr, nc = c+dc;
-      if (nr>=0&&nr<N&&nc>=0&&nc<N&&board[nr][nc]!==0) s++;
-    }
+function prox(r,c){
+  let s=0;
+  for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<N&&nc>=0&&nc<N&&board[nr][nc])s++}
   return s;
 }
 
-// ── Win check ──
-function checkWin(r, c, p) {
-  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
-  for (const [dr, dc] of dirs) {
-    let stones = [[r, c]];
-    for (let d = 1; d < 5; d++) {
-      const nr = r+dr*d, nc = c+dc*d;
-      if (nr<0||nr>=N||nc<0||nc>=N||board[nr][nc]!==p) break;
-      stones.push([nr, nc]);
-    }
-    for (let d = 1; d < 5; d++) {
-      const nr = r-dr*d, nc = c-dc*d;
-      if (nr<0||nr>=N||nc<0||nc>=N||board[nr][nc]!==p) break;
-      stones.push([nr, nc]);
-    }
-    if (stones.length >= 5) { winStones = stones; return true; }
+// ──────────────────────────────
+//  Game logic
+// ──────────────────────────────
+function newGame(){
+  clearTimeout(timer);
+  board=Array.from({length:N},()=>new Array(N).fill(0));
+  cur=1;over=false;hist=[];wins=[];hover=null;analysisCache=null;
+  document.getElementById('hlist').innerHTML='';
+  document.getElementById('think').classList.remove('on');
+  document.getElementById('btn-analyze').disabled=true;
+  document.getElementById('move-cnt').textContent='0';
+  setStatus('흑돌(나)의 차례입니다');
+  setActive(1);draw();
+}
+
+function confirmNewGame(){
+  if(!over&&hist.length>2){if(!confirm('진행 중인 게임을 종료하고 새 게임을 시작할까요?'))return;}
+  newGame();
+}
+
+function nextGame(){ closeResult(); newGame(); }
+
+// pixel <-> cell
+const px=c=>c*CELL, py=r=>r*CELL;
+function nearest(mx,my){
+  const c=Math.round(mx/CELL),r=Math.round(my/CELL);
+  return(r<0||r>=N||c<0||c>=N)?null:{r,c};
+}
+
+// ── Draw ──
+function draw(){
+  ctx.clearRect(0,0,CV,CV);
+  ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=1;
+  for(let i=0;i<N;i++){
+    ctx.beginPath();ctx.moveTo(px(i),0);ctx.lineTo(px(i),CV);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,py(i));ctx.lineTo(CV,py(i));ctx.stroke();
+  }
+  [[3,3],[3,7],[3,11],[7,3],[7,7],[7,11],[11,3],[11,7],[11,11]].forEach(([r,c])=>{
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.beginPath();ctx.arc(px(c),py(r),3.5,0,Math.PI*2);ctx.fill();
+  });
+  if(hover&&!over&&cur===1&&board[hover.r][hover.c]===0){
+    ctx.save();ctx.globalAlpha=.3;drawStone(hover.r,hover.c,1);ctx.restore();
+  }
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)
+    if(board[r][c]) drawStone(r,c,board[r][c],wins.some(([wr,wc])=>wr===r&&wc===c));
+  if(hist.length){
+    const l=hist[hist.length-1];
+    ctx.strokeStyle=l.p===1?'rgba(255,210,0,.9)':'rgba(60,60,60,.85)';
+    ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(l.c),py(l.r),5,0,Math.PI*2);ctx.stroke();
+  }
+}
+
+function drawStone(r,c,p,win=false){
+  const x=px(c),y=py(r);
+  const g=ctx.createRadialGradient(x-STONE_R*.3,y-STONE_R*.3,STONE_R*.05,x,y,STONE_R);
+  if(p===1){g.addColorStop(0,'#888');g.addColorStop(1,'#000')}
+  else{g.addColorStop(0,'#fff');g.addColorStop(1,'#bbb')}
+  ctx.beginPath();ctx.arc(x,y,STONE_R,0,Math.PI*2);
+  ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=6;ctx.shadowOffsetX=2;ctx.shadowOffsetY=3;
+  ctx.fillStyle=g;ctx.fill();ctx.shadowColor='transparent';
+  if(win){ctx.strokeStyle='#e53935';ctx.lineWidth=3;ctx.stroke()}
+}
+
+// ── Events ──
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  hover=nearest((e.clientX-r.left)*(CV/r.width),(e.clientY-r.top)*(CV/r.height));draw();
+});
+canvas.addEventListener('mouseleave',()=>{hover=null;draw()});
+canvas.addEventListener('click',e=>{
+  if(over||cur!==1)return;
+  const r=canvas.getBoundingClientRect();
+  const cell=nearest((e.clientX-r.left)*(CV/r.width),(e.clientY-r.top)*(CV/r.height));
+  if(!cell||board[cell.r][cell.c])return;
+  doMove(cell.r,cell.c,1);
+});
+
+// ── Move ──
+function doMove(r,c,p,reason=''){
+  board[r][c]=p;
+  const n=hist.length+1;
+  hist.push({r,c,p,n,reason});
+  addH(r,c,p,n);
+  document.getElementById('move-cnt').textContent=n;
+  draw();
+  if(checkWin(r,c,p)){endGame(p===1?'win':'lose');return}
+  if(hist.length===N*N){endGame('draw');return}
+  if(p===1){
+    cur=2;setActive(2);
+    setStatus('Gemini가 생각 중...');
+    document.getElementById('think').classList.add('on');
+    timer=setTimeout(()=>runAI(),100);
+  }else{
+    cur=1;setActive(1);setStatus('흑돌(나)의 차례입니다');
+  }
+}
+
+async function runAI(){
+  const move=await getGeminiMove();
+  document.getElementById('think').classList.remove('on');
+  if(move&&board[move.r][move.c]===0) doMove(move.r,move.c,2,move.reason||'');
+  else{
+    // emergency: first empty cell
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!board[r][c]){doMove(r,c,2);return}
+  }
+}
+
+// ── Win ──
+function checkWin(r,c,p){
+  const dirs=[[0,1],[1,0],[1,1],[1,-1]];
+  for(const[dr,dc]of dirs){
+    let s=[[r,c]];
+    for(let d=1;d<5;d++){const nr=r+dr*d,nc=c+dc*d;if(nr<0||nr>=N||nc<0||nc>=N||board[nr][nc]!==p)break;s.push([nr,nc])}
+    for(let d=1;d<5;d++){const nr=r-dr*d,nc=c-dc*d;if(nr<0||nr>=N||nc<0||nc>=N||board[nr][nc]!==p)break;s.push([nr,nc])}
+    if(s.length>=5){wins=s;return true}
   }
   return false;
 }
 
-function endGame(result) {
-  gameOver = true;
-  clearTimeout(thinkTimer);
-  document.getElementById('think-ind').classList.remove('visible');
-  document.getElementById('btn-analyze').disabled = false;
-  document.getElementById('card-player').classList.remove('active');
-  document.getElementById('card-gemini').classList.remove('active');
+function endGame(result){
+  over=true;clearTimeout(timer);
+  document.getElementById('think').classList.remove('on');
+  document.getElementById('btn-analyze').disabled=false;
 
-  // Win animation loop
-  if (winStones.length > 0) {
-    let frame = 0;
-    (function animate() {
-      if (!gameOver) return;
-      frame++;
-      ctx.clearRect(0, 0, CV, CV);
-      // redraw board without win highlight
-      drawBoardStatic();
-      // pulsing win stones
-      const alpha = 0.5 + 0.5 * Math.sin(frame * 0.15);
-      winStones.forEach(([wr, wc]) => {
-        ctx.save();
-        ctx.shadowColor   = '#e53935';
-        ctx.shadowBlur    = 14 * alpha;
-        drawStone(ctx, wr, wc, board[wr][wc]);
-        ctx.strokeStyle   = `rgba(229,57,53,${alpha})`;
-        ctx.lineWidth     = 3;
-        ctx.beginPath();
-        ctx.arc(px(wc), py(wr), STONE_R, 0, Math.PI*2);
-        ctx.stroke();
-        ctx.restore();
-      });
-      requestAnimationFrame(animate);
+  // pulsing win stones
+  if(wins.length){
+    let f=0;
+    (function anim(){
+      if(!over)return;f++;
+      ctx.clearRect(0,0,CV,CV);
+      ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=1;
+      for(let i=0;i<N;i++){ctx.beginPath();ctx.moveTo(px(i),0);ctx.lineTo(px(i),CV);ctx.stroke();ctx.beginPath();ctx.moveTo(0,py(i));ctx.lineTo(CV,py(i));ctx.stroke()}
+      [[3,3],[3,7],[3,11],[7,3],[7,7],[7,11],[11,3],[11,7],[11,11]].forEach(([r,c])=>{ctx.fillStyle='rgba(0,0,0,.55)';ctx.beginPath();ctx.arc(px(c),py(r),3.5,0,Math.PI*2);ctx.fill()});
+      for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(board[r][c])drawStone(r,c,board[r][c]);
+      const a=.45+.55*Math.sin(f*.14);
+      wins.forEach(([wr,wc])=>{ctx.save();ctx.strokeStyle=`rgba(229,57,53,${a})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(px(wc),py(wr),STONE_R,0,Math.PI*2);ctx.stroke();ctx.restore()});
+      requestAnimationFrame(anim);
     })();
   }
 
-  if (result === 'win')   setStatus('🎉 승리! 5개를 연속으로 놓았습니다!', 'win');
-  else if (result==='lose') setStatus('💙 Gemini의 승리! 다시 도전해보세요', 'lose');
-  else                    setStatus('비겼습니다!');
+  const prevLevel=level;
+  if(result==='win'){
+    winStreak++;lossCount=0;
+    const oldLevel=level;
+    level=Math.min(500,level+winStreak); // more consecutive wins = bigger jump
+    if(level>oldLevel) showToast(`🎉 레벨 업! LV ${oldLevel} → LV ${level}`);
+    showResult('win',prevLevel);
+    setStatus('🎉 승리!','win');
+  }else if(result==='lose'){
+    lossCount++;winStreak=0;
+    if(level>1){showToast(`💀 레벨 1로 리셋`);level=1;}
+    showResult('lose',prevLevel);
+    setStatus('AI의 승리!','lose');
+  }else{
+    setStatus('비겼습니다!');
+    showResult('draw',prevLevel);
+  }
+  updateLevelUI();
 }
 
-function drawBoardStatic() {
-  ctx.strokeStyle = 'rgba(0,0,0,0.38)';
-  ctx.lineWidth   = 1;
-  for (let i = 0; i < N; i++) {
-    ctx.beginPath(); ctx.moveTo(px(i), 0);     ctx.lineTo(px(i), CV); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,     py(i)); ctx.lineTo(CV,    py(i)); ctx.stroke();
+function showResult(result,prevLv){
+  const overlay=document.getElementById('result-overlay');
+  const icon=document.getElementById('res-icon');
+  const title=document.getElementById('res-title');
+  const sub=document.getElementById('res-sub');
+  const lvEl=document.getElementById('res-level');
+  const nextBtn=document.getElementById('res-next');
+
+  if(result==='win'){
+    icon.textContent='🏆';
+    title.className='result-title win';title.textContent='승리!';
+    sub.textContent=`${hist.length}수 만에 이겼습니다.\nLV ${prevLv} Gemini를 꺾었습니다!`;
+    lvEl.innerHTML=`레벨: <span class="hl">LV ${prevLv}</span> → <span class="hl" style="color:var(--gold2)">LV ${level}</span>`;
+    nextBtn.textContent=`LV ${level}에 도전 →`;
+  }else if(result==='lose'){
+    icon.textContent='💀';
+    title.className='result-title lose';title.textContent='패배...';
+    sub.textContent=`LV ${prevLv} Gemini에게 졌습니다.\n레벨이 1로 리셋됩니다.`;
+    lvEl.innerHTML=`<span style="color:#ef5350">LV ${prevLv} → LV 1 (리셋)</span>`;
+    nextBtn.textContent='LV 1부터 다시 →';
+  }else{
+    icon.textContent='🤝';
+    title.className='result-title';title.textContent='무승부';
+    sub.textContent='아슬아슬한 대국이었습니다!';
+    lvEl.innerHTML=`레벨 유지: <span class="hl">LV ${level}</span>`;
+    nextBtn.textContent='다시 도전 →';
   }
-  const stars = [[3,3],[3,7],[3,11],[7,3],[7,7],[7,11],[11,3],[11,7],[11,11]];
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
-  stars.forEach(([r,c]) => { ctx.beginPath(); ctx.arc(px(c), py(r), 3.5, 0, Math.PI*2); ctx.fill(); });
-  for (let r = 0; r < N; r++)
-    for (let c = 0; c < N; c++)
-      if (board[r][c] !== 0) drawStone(ctx, r, c, board[r][c]);
+  overlay.classList.add('open');
 }
+
+function closeResult(){document.getElementById('result-overlay').classList.remove('open')}
 
 // ── Undo ──
-function undoMove() {
-  if (gameOver || moveHistory.length === 0) return;
-  const removeCount = (moveHistory.length >= 2 && moveHistory[moveHistory.length-1].player === 2) ? 2 : 1;
-  for (let i = 0; i < removeCount; i++) {
-    if (!moveHistory.length) break;
-    const last = moveHistory.pop();
-    board[last.r][last.c] = 0;
-    const list = document.getElementById('history-list');
-    if (list.lastChild) list.removeChild(list.lastChild);
+function undoMove(){
+  if(over||!hist.length)return;
+  const rm=(hist.length>=2&&hist[hist.length-1].p===2)?2:1;
+  for(let i=0;i<rm;i++){
+    if(!hist.length)break;
+    const l=hist.pop();board[l.r][l.c]=0;
+    const hl=document.getElementById('hlist');if(hl.lastChild)hl.removeChild(hl.lastChild);
   }
-  currentPlayer = 1;
-  setActive(1);
-  document.getElementById('move-count').textContent = moveHistory.length;
-  setStatus('흑돌(나)의 차례입니다');
-  drawBoard();
+  cur=1;setActive(1);
+  document.getElementById('move-cnt').textContent=hist.length;
+  setStatus('흑돌(나)의 차례입니다');draw();
 }
 
-// ── Helpers ──
-function setStatus(msg, cls='') {
-  const el = document.getElementById('status-bar');
-  el.textContent = msg;
-  el.className   = 'status-bar ' + cls;
-}
-
-function setActive(p) {
-  document.getElementById('card-player').classList.toggle('active', p === 1);
-  document.getElementById('card-gemini').classList.toggle('active', p === 2);
-}
-
-function addHistory(r, c, player, num) {
-  const cols = 'ABCDEFGHIJKLMNO';
-  const list = document.getElementById('history-list');
-  const item = document.createElement('div');
-  item.className = 'history-item';
-  item.innerHTML = `<div class="h-stone ${player===1?'h-black':'h-white'}"></div><span>${num}. ${cols[c]}${r+1}</span><span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,0.3)">${player===1?'나':'AI'}</span>`;
-  list.appendChild(item);
-  list.scrollTop = list.scrollHeight;
+// ── UI helpers ──
+function setStatus(m,c=''){const e=document.getElementById('sbar');e.textContent=m;e.className='sbar '+c}
+function setActive(p){document.getElementById('card-p').classList.toggle('active',p===1);document.getElementById('card-ai').classList.toggle('active',p===2)}
+function addH(r,c,p,n){
+  const l=document.getElementById('hlist');
+  const d=document.createElement('div');d.className='hitem';
+  d.innerHTML=`<div class="hs ${p===1?'b':'w'}"></div><span>${n}. ${COLS[c]}${r+1}</span><span style="margin-left:auto;font-size:10px;color:rgba(255,255,255,.26)">${p===1?'나':'AI'}</span>`;
+  l.appendChild(d);l.scrollTop=l.scrollHeight;
 }
 
 // ── Analysis ──
-async function openAnalysis() {
-  const apiKey = (document.getElementById('api-key-input').value || '').trim();
-  if (!apiKey) {
-    alert('먼저 상단의 Gemini API 키를 입력하고 "저장" 버튼을 눌러주세요.');
-    return;
+function openAnalysis(){
+  document.getElementById('mb').classList.add('open');
+  if(analysisCache){
+    document.getElementById('aloading').style.display='none';
+    renderResult(analysisCache);return;
   }
+  runAnalysis();
+}
 
-  document.getElementById('modal-backdrop').classList.add('open');
-  document.getElementById('analysis-loading').style.display = 'block';
-  document.getElementById('analysis-content').classList.remove('visible');
-  document.getElementById('analysis-content').innerHTML = '';
+async function runAnalysis(){
+  document.getElementById('aloading').style.display='block';
+  document.getElementById('ares').classList.remove('on');
+  document.getElementById('ares').innerHTML='';
 
-  const cols = 'ABCDEFGHIJKLMNO';
-  const gameRecord  = moveHistory.map(m=>`${m.num}.${cols[m.c]}${m.r+1}(${m.player===1?'흑':'백'})`).join(', ');
-  const playerMoves = moveHistory.filter(m=>m.player===1).length;
-  const aiMoves     = moveHistory.filter(m=>m.player===2).length;
-  const lastMove    = moveHistory[moveHistory.length-1];
-  const winner      = winStones.length > 0 ? (lastMove?.player===1 ? '흑(사람)' : '백(Gemini AI)') : '무승부';
+  const rec=hist.map(m=>`${m.n}.${COLS[m.c]}${m.r+1}(${m.p===1?'흑':'백'})`).join(', ');
+  const pm=hist.filter(m=>m.p===1).length, am=hist.filter(m=>m.p===2).length;
+  const lm=hist[hist.length-1];
+  const winner=wins.length?(lm?.p===1?'흑(사람)':'백(Gemini)') :'무승부';
 
-  const prompt = `당신은 오목(Gomoku) 전문 해설가입니다. 다음 대국을 분석해주세요.
+  const prompt=`오목 전문 해설가로서 이 대국을 분석해주세요.
+총 ${hist.length}수, 결과: ${winner}, 레벨 ${level}
+기보: ${rec}
 
-[대국 정보]
-- 보드: 15x15
-- 총 수: ${moveHistory.length}수 (흑:${playerMoves}수, 백:${aiMoves}수)
-- 결과: ${winner}
-- 기보(좌표 열=A~O 숫자=1~15): ${gameRecord}
+순수 JSON만 응답:
+{"overall":"총평(100자)","player_score":숫자0-100,"ai_score":숫자0-100,"player_strong":"강점(60자)","player_weak":"약점(60자)","key_moments":[{"move":"N수 좌표","type":"critical|good|mistake","desc":"설명(70자)"},{"move":"N수 좌표","type":"critical|good|mistake","desc":"설명"},{"move":"N수 좌표","type":"critical|good|mistake","desc":"설명"}],"advice":"조언(90자)"}`;
 
-다음 JSON 형식으로만 응답하세요. 마크다운 없이 순수 JSON만:
-{
-  "overall": "전체 대국 총평 (100자 내외)",
-  "player_score": 숫자(0-100),
-  "ai_score": 숫자(0-100),
-  "player_strong": "플레이어 강점 (60자 내외)",
-  "player_weak": "플레이어 약점 (60자 내외)",
-  "key_moments": [
-    {"move": "N수 X좌표", "type": "critical|good|mistake", "desc": "설명 (70자 내외)"},
-    {"move": "N수 X좌표", "type": "critical|good|mistake", "desc": "설명 (70자 내외)"},
-    {"move": "N수 X좌표", "type": "critical|good|mistake", "desc": "설명 (70자 내외)"}
-  ],
-  "advice": "다음 대국을 위한 구체적 조언 (90자 내외)"
-}`;
-
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096,
-          responseMimeType: 'application/json',
-          thinkingConfig: { thinkingBudget: 0 }
-        }
-      })
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`API 오류 ${res.status}: ${errText}`);
+  try{
+    let raw='';
+    if(geminiKey){
+      const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
+      const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:600}})});
+      if(!res.ok)throw new Error('Gemini API '+res.status);
+      const data=await res.json();
+      raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    }else{
+      // Claude fallback
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,messages:[{role:'user',content:prompt}]})
+      });
+      if(!res.ok)throw new Error('Claude API '+res.status);
+      const data=await res.json();
+      raw=(data.content||[]).map(b=>b.text||'').join('');
     }
-
-    const data = await res.json();
-    const finishReason = data.candidates?.[0]?.finishReason;
-    const raw  = data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-
-    if (finishReason === 'MAX_TOKENS') {
-      throw new Error('응답이 토큰 한도를 초과해 잘렸습니다. (대국이 길어 분석 내용이 늘어난 경우 발생할 수 있습니다)');
-    }
-    if (!raw) {
-      throw new Error('Gemini 응답이 비어있습니다. (finishReason: ' + (finishReason || '알수없음') + ')');
-    }
-
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const analysis = JSON.parse(clean);
-    renderAnalysis(analysis);
-
-  } catch(e) {
-    document.getElementById('analysis-loading').style.display = 'none';
-    const errEl = document.getElementById('analysis-content');
-    errEl.innerHTML = `<div class="error-msg">분석 중 오류가 발생했습니다.<br><br>${e.message}</div>`;
-    errEl.classList.add('visible');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const a=JSON.parse(clean);
+    analysisCache=a;
+    renderResult(a);
+  }catch(e){
+    document.getElementById('aloading').style.display='none';
+    const ae=document.getElementById('ares');
+    ae.innerHTML=`<div class="errbox">분석 오류: ${e.message}</div>`;
+    ae.classList.add('on');
   }
 }
 
-function renderAnalysis(a) {
-  document.getElementById('analysis-loading').style.display = 'none';
-  const typeLabel = { critical:'결정적 순간', good:'좋은 수', mistake:'실수' };
-  const typeColor = { critical:'#ef5350', good:'#66bb6a', mistake:'#ffa726' };
-
-  const html = `
-    <div class="score-grid">
-      <div class="score-item">
-        <div class="score-label">나의 기력</div>
-        <div class="score-value">${a.player_score}<span style="font-size:13px;opacity:0.5">/100</span></div>
-      </div>
-      <div class="score-item">
-        <div class="score-label">Gemini 기력</div>
-        <div class="score-value blue">${a.ai_score}<span style="font-size:13px;opacity:0.5">/100</span></div>
-      </div>
+function renderResult(a){
+  document.getElementById('aloading').style.display='none';
+  const tl={critical:'결정적 순간',good:'좋은 수',mistake:'실수'};
+  const tc={critical:'#e53935',good:'#66bb6a',mistake:'#ffa726'};
+  const ae=document.getElementById('ares');
+  ae.innerHTML=`
+    <div class="sgrid">
+      <div class="sitem"><div class="slbl">나의 기력</div><div class="sval">${a.player_score}<span style="font-size:12px;opacity:.4">/100</span></div></div>
+      <div class="sitem"><div class="slbl">Gemini 기력</div><div class="sval bl">${a.ai_score}<span style="font-size:12px;opacity:.4">/100</span></div></div>
     </div>
-    <div class="analysis-section">
-      <div class="analysis-section-title">총평</div>
-      <div class="analysis-text">${a.overall}</div>
-    </div>
-    <div class="analysis-section">
-      <div class="analysis-section-title">플레이어 분석</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:rgba(67,160,71,0.08);border:1px solid rgba(67,160,71,0.2);border-radius:8px;padding:12px">
-          <div style="font-size:9px;letter-spacing:2px;color:#66bb6a;margin-bottom:6px">강점</div>
-          <div class="analysis-text" style="font-size:13px">${a.player_strong}</div>
+    <div class="asec"><div class="asec-t">총평</div><div class="atext">${a.overall}</div></div>
+    <div class="asec">
+      <div class="asec-t">플레이어 분석</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:rgba(67,160,71,.08);border:1px solid rgba(67,160,71,.2);border-radius:8px;padding:10px">
+          <div style="font-size:9px;letter-spacing:2px;color:#66bb6a;margin-bottom:4px">강점</div>
+          <div class="atext" style="font-size:12px">${a.player_strong}</div>
         </div>
-        <div style="background:rgba(239,83,80,0.08);border:1px solid rgba(239,83,80,0.2);border-radius:8px;padding:12px">
-          <div style="font-size:9px;letter-spacing:2px;color:#ef5350;margin-bottom:6px">약점</div>
-          <div class="analysis-text" style="font-size:13px">${a.player_weak}</div>
+        <div style="background:rgba(239,83,80,.08);border:1px solid rgba(239,83,80,.2);border-radius:8px;padding:10px">
+          <div style="font-size:9px;letter-spacing:2px;color:#ef5350;margin-bottom:4px">약점</div>
+          <div class="atext" style="font-size:12px">${a.player_weak}</div>
         </div>
       </div>
     </div>
-    <div class="analysis-section">
-      <div class="analysis-section-title">핵심 수(手)</div>
-      <div class="key-moves">
-        ${(a.key_moments||[]).map(m=>`
-          <div class="key-move ${m.type}">
-            <span class="move-badge">${m.move}</span>
-            <span style="font-size:10px;color:${typeColor[m.type]||'#aaa'};margin-left:6px">${typeLabel[m.type]||m.type}</span>
-            <div class="move-desc">${m.desc}</div>
-          </div>`).join('')}
+    <div class="asec">
+      <div class="asec-t">핵심 수(手)</div>
+      <div class="kmoves">${(a.key_moments||[]).map(m=>`
+        <div class="km ${m.type}">
+          <span class="mbadge">${m.move}</span>
+          <span style="font-size:10px;color:${tc[m.type]||'#aaa'};margin-left:6px">${tl[m.type]||m.type}</span>
+          <div class="mdesc">${m.desc}</div>
+        </div>`).join('')}
       </div>
     </div>
-    <div class="analysis-section">
-      <div class="analysis-section-title">다음 대국 조언</div>
-      <div style="background:rgba(66,133,244,0.08);border:1px solid rgba(66,133,244,0.2);border-radius:10px;padding:14px">
-        <div class="analysis-text">${a.advice}</div>
+    <div class="asec">
+      <div class="asec-t">조언</div>
+      <div style="background:rgba(66,133,244,.08);border:1px solid rgba(66,133,244,.2);border-radius:9px;padding:12px">
+        <div class="atext">${a.advice}</div>
       </div>
     </div>`;
-
-  const el = document.getElementById('analysis-content');
-  el.innerHTML = html;
-  el.classList.add('visible');
+  ae.classList.add('on');
 }
 
-function closeAnalysis() {
-  document.getElementById('modal-backdrop').classList.remove('open');
-}
+function closeAnalysis(){document.getElementById('mb').classList.remove('open')}
 
 // ── Start ──
-loadApiKey();
+loadKey();
 newGame();
+updateLevelUI();
 </script>
 </body>
 </html>
